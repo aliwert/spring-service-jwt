@@ -12,6 +12,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Component
@@ -19,17 +20,33 @@ public class JwtService {
     public static final String SECRET_KEY = "G1AlHs7FX0689MK3hvG/CV23uqS6V2P9mQ3+0wkhrGw=";
 
     public String generateToken(UserDetails userDetails) {
-        Map<String, String> claimsMap = new HashMap<>();
+        Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put("role", "ADMIN");
 
-        return Jwts.builder().setSubject(userDetails.getUsername()).setClaims(claimsMap).setIssuedAt(new Date())
+        return Jwts.builder().setSubject(userDetails.getUsername()).setIssuedAt(new Date())
+                .addClaims(claimsMap)
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))// 2 hours
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public <T> T exportToken(String token, Function<Claims, T> claimsTFunction) {
+
+
+    public Object getClaimsByKey(String token, String key) {
+        Claims claims = getClaims(token);
+        return claims.get(key);
+
+
+    }
+
+    public Claims getClaims(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
+        return claims;
+    }
+
+    public <T> T exportToken(String token, Function<Claims, T> claimsTFunction) {
+        Claims claims = getClaims(token);
+
         return claimsTFunction.apply(claims);
     }
 

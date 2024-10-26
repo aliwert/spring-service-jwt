@@ -3,6 +3,7 @@ package com.alimert.controller.impl;
 import com.alimert.controller.IRestAuthController;
 import com.alimert.dto.DtoUser;
 import com.alimert.jwt.AuthRequest;
+import com.alimert.jwt.AuthResponse;
 import com.alimert.service.IAuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,5 +22,12 @@ public class RestAuthControllerImpl implements IRestAuthController {
     @Override
     public DtoUser register(@Valid @RequestBody AuthRequest authRequest) {
         return authService.register(authRequest);
+    }
+
+
+    @PostMapping("/authenticate")
+    @Override
+    public AuthResponse authenticate(@Valid @RequestBody AuthRequest authRequest) {
+        return authService.authenticate(authRequest);
     }
 }
