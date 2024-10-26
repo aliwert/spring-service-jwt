@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component
@@ -17,10 +19,13 @@ public class JwtService {
     public static final String SECRET_KEY = "G1AlHs7FX0689MK3hvG/CV23uqS6V2P9mQ3+0wkhrGw=";
 
     public String generateToken(UserDetails userDetails) {
-        return Jwts.builder().setSubject(userDetails.getUsername()).setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))
+        Map<String, String> claimsMap = new HashMap<>();
+        claimsMap.put("role", "ADMIN");
+
+        return Jwts.builder().setSubject(userDetails.getUsername()).setClaims(claimsMap).setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))// 2 hours
                 .signWith(getKey(), SignatureAlgorithm.HS256)
-                .compact();// 2 hours
+                .compact();
     }
 
     public <T> T exportToken(String token, Function<Claims, T> claimsTFunction) {
