@@ -31,12 +31,9 @@ public class JwtService {
     }
 
 
-
     public Object getClaimsByKey(String token, String key) {
         Claims claims = getClaims(token);
         return claims.get(key);
-
-
     }
 
     public Claims getClaims(String token) {
