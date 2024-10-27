@@ -19,7 +19,7 @@ public class RefreshToken {
     private Long id;
 
     @Column(name = "refresh_token")
-    private String refreshtToken;
+    private String refreshToken;
 
     @Column(name = "expire_date")
     private Date expireDate;
