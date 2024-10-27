@@ -4,7 +4,9 @@ import com.alimert.dto.DtoUser;
 import com.alimert.jwt.AuthRequest;
 import com.alimert.jwt.AuthResponse;
 import com.alimert.jwt.JwtService;
+import com.alimert.model.RefreshToken;
 import com.alimert.model.User;
+import com.alimert.repository.RefreshTokenRepository;
 import com.alimert.repository.UserRepository;
 import com.alimert.service.IAuthService;
 import org.springframework.beans.BeanUtils;
@@ -15,7 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements IAuthService {
@@ -32,6 +36,20 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    private RefreshToken createRefreshToken(User user) {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setRefreshtToken(UUID.randomUUID().toString());
+        refreshToken.setExpireDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 4));
+        refreshToken.setUser(user);
+
+
+
+        return refreshToken;
+    }
+
 
     @Override
     public AuthResponse authenticate(AuthRequest authRequest) {
@@ -40,8 +58,12 @@ public class AuthServiceImpl implements IAuthService {
             authenticationProvider.authenticate(auth);// checking db username and password
 
             Optional<User> optionalUser = userRepository.findByUsername(authRequest.getUsername());
-            String token = jwtService.generateToken(optionalUser.get());
-            return new AuthResponse(token);
+            String accessToken = jwtService.generateToken(optionalUser.get());
+
+            RefreshToken refreshToken = createRefreshToken(optionalUser.get());
+            refreshTokenRepository.save(refreshToken);
+
+            return new AuthResponse(accessToken, refreshToken.getRefreshtToken());
         } catch (Exception e) {
             System.out.println(("Username and password incorrect" + e.getMessage()));
         }
